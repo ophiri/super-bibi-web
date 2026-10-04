@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#101014">
+  <title>Super Bibi</title>
+  <style>
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #101014;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    #unity-container {
+      position: fixed;
+      inset: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      display: grid;
+      place-items: center;
+      background: #101014;
+    }
+    #unity-canvas {
+      width: min(100%, calc(100vh * 4 / 3));
+      height: min(100%, calc(100vw * 3 / 4));
+      max-width: 100%;
+      max-height: 100%;
+      background: #231f20;
+      touch-action: none;
+    }
+    #loading {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: min(70vw, 360px);
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    #progress {
+      height: 8px;
+      margin-top: 12px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #3a3a44;
+    }
+    #progress-bar {
+      width: 0;
+      height: 100%;
+      background: #ffcf33;
+      transition: width .15s linear;
+    }
+    #status {
+      margin-top: 10px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    #fullscreen {
+      position: fixed;
+      right: calc(12px + env(safe-area-inset-right));
+      bottom: calc(12px + env(safe-area-inset-bottom));
+      z-index: 2;
+      padding: 9px 12px;
+      border: 0;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, .65);
+      color: #fff;
+      font: inherit;
+    }
+  </style>
+</head>
+<body>
+  <main id="unity-container">
+    <canvas id="unity-canvas" tabindex="-1"></canvas>
+    <div id="loading">
+      <strong>Loading Super Bibi...</strong>
+      <div id="progress"><div id="progress-bar"></div></div>
+      <div id="status">Preparing game</div>
+    </div>
+  </main>
+  <button id="fullscreen" type="button">Fullscreen</button>
+  <script>
+    const canvas = document.querySelector("#unity-canvas");
+    const loading = document.querySelector("#loading");
+    const progressBar = document.querySelector("#progress-bar");
+    const status = document.querySelector("#status");
+    const fullscreen = document.querySelector("#fullscreen");
+    const buildUrl = "Build";
+    const loaderUrl = buildUrl + "/WebGLBuild.loader.js";
+    const config = {
+      dataUrl: buildUrl + "/WebGLBuild.data",
+      frameworkUrl: buildUrl + "/WebGLBuild.framework.js",
+      codeUrl: buildUrl + "/WebGLBuild.wasm",
+      streamingAssetsUrl: "StreamingAssets",
+      companyName: "ophirapps",
+      productName: "Super Bibi",
+      productVersion: "1.0-web"
+    };
+
+    const script = document.createElement("script");
+    script.src = loaderUrl;
+    script.onload = () => {
+      createUnityInstance(canvas, config, progress => {
+        progressBar.style.width = (100 * progress) + "%";
+        status.textContent = Math.round(100 * progress) + "%";
+      }).then(instance => {
+        loading.hidden = true;
+        fullscreen.onclick = () => instance.SetFullscreen(1);
+      }).catch(message => {
+        status.textContent = String(message);
+        status.style.color = "#ff8a8a";
+      });
+    };
+    script.onerror = () => {
+      status.textContent = "The game loader could not be downloaded.";
+      status.style.color = "#ff8a8a";
+    };
+    document.body.appendChild(script);
+  </script>
+</body>
+</html>
